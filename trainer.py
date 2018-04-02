@@ -223,7 +223,7 @@ class GTA(object):
                     self.optimizerC = utils.exp_lr_scheduler(self.optimizerC, epoch, self.opt.lr, self.opt.lrd, curr_iter)                  
             
             # Validate every epoch
-            self.validate(epoch)
+            self.validate(epoch+1)
 
 
 class Sourceonly(object):

@@ -13,6 +13,7 @@ class _netG(nn.Module):
         self.ngf = opt.ngf
         self.nz = opt.nz
         self.gpu = opt.gpu
+        self.nclasses = nclasses
         
         self.main = nn.Sequential(
             nn.ConvTranspose2d(self.nz+self.ndim+nclasses+1, self.ngf*8, 2, 1, 0, bias=False),
@@ -31,12 +32,13 @@ class _netG(nn.Module):
             nn.BatchNorm2d(self.ngf),
             nn.ReLU(True),
 
-            nn.ConvTranspose2d(self.ngf, 1, 4, 2, 1, bias=False),
+            nn.ConvTranspose2d(self.ngf, 3, 4, 2, 1, bias=False),
             nn.Tanh()
         )
 
     def forward(self, input):   
         batchSize = input.size()[0]
+        input = input.view(-1, self.ndim+self.nclasses+1, 1, 1)
         noise = torch.FloatTensor(batchSize, self.nz, 1, 1).normal_(0, 1)    
         if self.gpu>=0:
             noise = noise.cuda()
@@ -53,7 +55,7 @@ class _netD(nn.Module):
         
         self.ndf = opt.ndf
         self.feature = nn.Sequential(
-            nn.Conv2d(1, self.ndf, 3, 1, 1),            
+            nn.Conv2d(3, self.ndf, 3, 1, 1),            
             nn.BatchNorm2d(self.ndf),
             nn.LeakyReLU(0.2, inplace=True),
             nn.MaxPool2d(2,2),
@@ -96,7 +98,7 @@ class _netF(nn.Module):
         
         self.ndf = opt.ndf
         self.feature = nn.Sequential(
-            nn.Conv2d(1, self.ndf, 5, 1, 0),
+            nn.Conv2d(3, self.ndf, 5, 1, 0),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
             
@@ -110,7 +112,7 @@ class _netF(nn.Module):
 
     def forward(self, input):   
         output = self.feature(input)
-        return output
+        return output.view(-1, 2*self.ndf)
 
 """
 Classifier network
@@ -126,6 +128,6 @@ class _netC(nn.Module):
         )
 
     def forward(self, input):       
-        output = self.main(input.view(-1, self.ndf*2))
+        output = self.main(input)
         return output
 
