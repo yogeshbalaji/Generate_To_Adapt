@@ -76,8 +76,8 @@ def main():
     source_val_root = os.path.join(opt.dataroot, 'svhn/testset')
     target_root = os.path.join(opt.dataroot, 'mnist/trainset')
     
-    transform_source = transforms.Compose([transforms.Scale(opt.imageSize), transforms.ToTensor(), transforms.Normalize(mean,std)])
-    transform_target = transforms.Compose([transforms.Scale(opt.imageSize), transforms.ToTensor(), transforms.Normalize(mean,std)])
+    transform_source = transforms.Compose([transforms.Resize(opt.imageSize), transforms.ToTensor(), transforms.Normalize(mean,std)])
+    transform_target = transforms.Compose([transforms.Resize(opt.imageSize), transforms.ToTensor(), transforms.Normalize(mean,std)])
 
     source_train = dset.ImageFolder(root=source_train_root, transform=transform_source)
     source_val = dset.ImageFolder(root=source_val_root, transform=transform_source)
