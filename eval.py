@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--gpu', type=int, default=1, help='GPU to use, -1 for CPU training')
     parser.add_argument('--checkpoint_dir', default='results/models', help='folder to load model checkpoints from')
     parser.add_argument('--method', default='GTA', help='Method to evaluate| GTA, sourceonly')
-    parser.add_argument('--model_best', default=0, help='Flag to specify whether to use the best validation model or last checkpoint| 1-model best, 0-current checkpoint')
+    parser.add_argument('--model_best', type=int, default=0, help='Flag to specify whether to use the best validation model or last checkpoint| 1-model best, 0-current checkpoint')
 
     opt = parser.parse_args()
 
