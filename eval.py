@@ -23,7 +23,7 @@ def main():
     parser.add_argument('--gpu', type=int, default=1, help='GPU to use, -1 for CPU training')
     parser.add_argument('--checkpoint_dir', default='results/models', help='folder to load model checkpoints from')
     parser.add_argument('--method', default='GTA', help='Method to evaluate| GTA, sourceonly')
-    parser.add_argument('--model_best', default=True, help='Flag to specify whether to use the best validation model or last checkpoint')
+    parser.add_argument('--model_best', default=0, help='Flag to specify whether to use the best validation model or last checkpoint| 1-model best, 0-current checkpoint')
 
     opt = parser.parse_args()
 
@@ -40,7 +40,7 @@ def main():
 
     target_root = os.path.join(opt.dataroot, 'mnist/trainset')
 
-    transform_target = transforms.Compose([transforms.Scale(opt.imageSize), transforms.ToTensor(), transforms.Normalize(mean,std)])
+    transform_target = transforms.Compose([transforms.Resize(opt.imageSize), transforms.ToTensor(), transforms.Normalize(mean,std)])
     target_test = dset.ImageFolder(root=target_root, transform=transform_target)
     targetloader = torch.utils.data.DataLoader(target_test, batch_size=opt.batchSize, shuffle=False, num_workers=2)
 
@@ -52,7 +52,7 @@ def main():
     netC = models._netC(opt, nclasses)
     
     if opt.method == 'GTA':
-        if opt.model_best == False: 
+        if opt.model_best == 0: 
             netF_path = os.path.join(opt.checkpoint_dir, 'netF.pth')
             netC_path = os.path.join(opt.checkpoint_dir, 'netC.pth')
         else:
@@ -60,7 +60,7 @@ def main():
             netC_path = os.path.join(opt.checkpoint_dir, 'model_best_netC.pth')
     
     elif opt.method == 'sourceonly':
-        if opt.model_best == False: 
+        if opt.model_best == 0: 
             netF_path = os.path.join(opt.checkpoint_dir, 'netF_sourceonly.pth')
             netC_path = os.path.join(opt.checkpoint_dir, 'netC_sourceonly.pth')
         else:
