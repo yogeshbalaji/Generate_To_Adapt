@@ -35,8 +35,8 @@ def main():
         os.environ['CUDA_VISIBLE_DEVICES'] = str(opt.gpu)
 
     # Creating data loaders
-    mean = np.array([0.44])
-    std = np.array([0.19])
+    mean = np.array([0.44, 0.44, 0.44])
+    std = np.array([0.19, 0.19, 0.19])
 
     target_root = os.path.join(opt.dataroot, 'mnist/trainset')
 
