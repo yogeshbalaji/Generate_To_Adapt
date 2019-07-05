@@ -74,7 +74,26 @@ class _netD(nn.Module):
             nn.Conv2d(self.ndf*4, self.ndf*2, 3, 1, 1),           
             nn.BatchNorm2d(self.ndf*2),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.MaxPool2d(4,4)           
+            nn.MaxPool2d(4,4),
+
+            #required for 64
+
+            nn.Conv2d(self.ndf*2, self.ndf*2, 2, 1,1),
+            nn.BatchNorm2d(self.ndf*2),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.MaxPool2d(4,4),
+            #required for 128
+
+            nn.Conv2d(self.ndf*2, self.ndf*2, 2, 1,1),
+            nn.BatchNorm2d(self.ndf*2),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.MaxPool2d(4,4),
+            #required for 256
+
+            nn.Conv2d(self.ndf*2, self.ndf*2, 2, 1,1),
+            nn.BatchNorm2d(self.ndf*2),
+            nn.LeakyReLU(0.2, inplace=True),
+            nn.MaxPool2d(4,4),
         )
 
         self.classifier_c = nn.Sequential(nn.Linear(self.ndf*2, nclasses))              
@@ -83,10 +102,16 @@ class _netD(nn.Module):
         						nn.Sigmoid())              
 
     def forward(self, input):       
+        #print("input D .shape:")
+        #print(input.shape)
         output = self.feature(input)
         output_s = self.classifier_s(output.view(-1, self.ndf*2))
         output_s = output_s.view(-1)
+        #print("D: output_s.shape:")
+        #print(output_s.shape)
         output_c = self.classifier_c(output.view(-1, self.ndf*2))
+        #print("D: output_c.shape:")
+        #print(output_c.shape)
         return output_s, output_c
 
 """
@@ -95,9 +120,16 @@ Feature extraction network
 class _netF(nn.Module):
     def __init__(self, opt):
         super(_netF, self).__init__()
-        
+        #print("NetF init")
         self.ndf = opt.ndf
+        #print("NetF details:")
+        #print(3, self.ndf)
+        #print(self.ndf, self.ndf)
+        #print(self.ndf, self.ndf*2)
+        #print("for 64, we do ")
+        #print(self.ndf * 2, self.ndf*2)
         self.feature = nn.Sequential(
+            #inp,out,kernel,stride,padding
             nn.Conv2d(3, self.ndf, 5, 1, 0),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, 2),
@@ -107,11 +139,36 @@ class _netF(nn.Module):
             nn.MaxPool2d(2, 2),
                     
             nn.Conv2d(self.ndf, self.ndf*2, 5, 1,0),
+            nn.ReLU(inplace=True),
+
+            # added this block to reduce conv size to (nfinput nfoutput 1 1)
+            nn.MaxPool2d(2, 2),
+
+            nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
+            nn.ReLU(inplace=True),
+            #required for 128
+            nn.MaxPool2d(2, 2),
+
+            nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
+            nn.ReLU(inplace=True),
+            #required for 256
+            nn.MaxPool2d(2, 2),
+
+            nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
             nn.ReLU(inplace=True)
+
+
         )
 
     def forward(self, input):   
+        # print("NetF forward")
+        # print(input.shape)
         output = self.feature(input)
+        #print("printing F shape")
+        #print(output.shape)
+        #print(self.ndf)
+        #print("printing F output shape")
+        #print(output.view(-1, 2*self.ndf).shape)
         return output.view(-1, 2*self.ndf)
 
 """
@@ -120,6 +177,7 @@ Classifier network
 class _netC(nn.Module):
     def __init__(self, opt, nclasses):
         super(_netC, self).__init__()
+        #print("NetC init")
         self.ndf = opt.ndf
         self.main = nn.Sequential(          
             nn.Linear(2*self.ndf, 2*self.ndf),
@@ -128,6 +186,10 @@ class _netC(nn.Module):
         )
 
     def forward(self, input):       
+        #print("NetC forward")
+        #print(input.shape)
         output = self.main(input)
+        #print("printing C output shape")
+        #print(output.shape)
         return output
 
