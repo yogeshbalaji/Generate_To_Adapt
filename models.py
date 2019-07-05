@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import pretrainedmodels
+import torchvision.models as models
 
 """
 Generator network
@@ -128,48 +130,59 @@ class _netF(nn.Module):
         #print(self.ndf, self.ndf*2)
         #print("for 64, we do ")
         #print(self.ndf * 2, self.ndf*2)
-        self.feature = nn.Sequential(
-            #inp,out,kernel,stride,padding
-            nn.Conv2d(3, self.ndf, 5, 1, 0),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, 2),
+        # self.feature = nn.Sequential(
+        #     #inp,out,kernel,stride,padding
+        #     nn.Conv2d(3, self.ndf, 5, 1, 0),
+        #     nn.ReLU(inplace=True),
+        #     nn.MaxPool2d(2, 2),
             
-            nn.Conv2d(self.ndf, self.ndf, 5, 1, 0),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, 2),
+        #     nn.Conv2d(self.ndf, self.ndf, 5, 1, 0),
+        #     nn.ReLU(inplace=True),
+        #     nn.MaxPool2d(2, 2),
                     
-            nn.Conv2d(self.ndf, self.ndf*2, 5, 1,0),
-            nn.ReLU(inplace=True),
+        #     nn.Conv2d(self.ndf, self.ndf*2, 5, 1,0),
+        #     nn.ReLU(inplace=True),
 
-            # added this block to reduce conv size to (nfinput nfoutput 1 1)
-            nn.MaxPool2d(2, 2),
+        #     # added this block to reduce conv size to (nfinput nfoutput 1 1)
+        #     nn.MaxPool2d(2, 2),
 
-            nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
-            nn.ReLU(inplace=True),
-            #required for 128
-            nn.MaxPool2d(2, 2),
+        #     nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
+        #     nn.ReLU(inplace=True),
+        #     #required for 128
+        #     nn.MaxPool2d(2, 2),
 
-            nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
-            nn.ReLU(inplace=True),
-            #required for 256
-            nn.MaxPool2d(2, 2),
+        #     nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
+        #     nn.ReLU(inplace=True),
+        #     #required for 256
+        #     nn.MaxPool2d(2, 2),
 
-            nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
-            nn.ReLU(inplace=True)
+        #     nn.Conv2d(self.ndf * 2, self.ndf*2, 4, 1,0),
+        #     nn.ReLU(inplace=True)
 
 
-        )
+        # )
+        # self.feature = models.resnet18(pretrained=True)
+        # num_ftrs = self.feature.fc.in_features
+        # for param in self.feature.parameters():
+        #      param.requires_grad = False
+        # self.feature.fc = nn.Linear(num_ftrs, opt.classes)
 
-    def forward(self, input):   
+
+    def forward(self, input):  
         # print("NetF forward")
         # print(input.shape)
-        output = self.feature(input)
+        #output = self.feature(input)
         #print("printing F shape")
         #print(output.shape)
         #print(self.ndf)
         #print("printing F output shape")
         #print(output.view(-1, 2*self.ndf).shape)
-        return output.view(-1, 2*self.ndf)
+        self.feature = models.resnet18(pretrained=True)
+        num_ftrs = self.feature.fc.in_features
+        for param in self.feature.parameters():
+             param.requires_grad = False
+        self.feature.fc = nn.Linear(num_ftrs, opt.classes)
+        return self.feature
 
 """
 Classifier network
@@ -178,18 +191,25 @@ class _netC(nn.Module):
     def __init__(self, opt, nclasses):
         super(_netC, self).__init__()
         #print("NetC init")
-        self.ndf = opt.ndf
-        self.main = nn.Sequential(          
-            nn.Linear(2*self.ndf, 2*self.ndf),
-            nn.ReLU(inplace=True),
-            nn.Linear(2*self.ndf, nclasses),                         
-        )
+        # self.ndf = opt.ndf
+        # self.main = models.resnet18(pretrained=True)
+        # num_ftrs = self.main.fc.in_features
+        # for param in self.main.parameters():
+        #      param.requires_grad = False
+        # self.main.fc = nn.Linear(num_ftrs, nclasses)
 
     def forward(self, input):       
         #print("NetC forward")
         #print(input.shape)
-        output = self.main(input)
+        #output = self.main(input)
         #print("printing C output shape")
         #print(output.shape)
-        return output
+
+        self.ndf = opt.ndf
+        self.main = models.resnet18(pretrained=True)
+        num_ftrs = self.main.fc.in_features
+        for param in self.main.parameters():
+             param.requires_grad = False
+        self.main.fc = nn.Linear(num_ftrs, nclasses)
+        return self.main
 

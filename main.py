@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--adv_weight', type=float, default = 0.1, help='weight for adv loss')
     parser.add_argument('--lrd', type=float, default=0.0001, help='learning rate decay, default=0.0002')
     parser.add_argument('--alpha', type=float, default = 0.3, help='multiplicative factor for target adv. loss')
+    parser.add_argument('--classes', type=int, default = 10, help='Total number of classes to ')
 
     opt = parser.parse_args()
     print(opt)
